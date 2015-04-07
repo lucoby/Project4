@@ -45,5 +45,24 @@ public class AppController {
 	//TODO set login to true
 	return "adminMain";
     }
+    
+    @RequestMapping(value = "/studentView", method = RequestMethod.POST)
+    public String studentDataSubmission(
+	    Model model) {
+	
+	//TODO use service to update params for LP
+	
+	//TODO return view with graphs and stuff
+	return "";
+    }
+
+    @RequestMapping(value = "/adminView", method = RequestMethod.POST)
+    public String adminDataSubmission( Model model) {
+	
+	//TODO use service to update params for LP
+	
+	//TODO return view with graphs and stuff
+	return "";
+    }
 
 }
