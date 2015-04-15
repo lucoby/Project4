@@ -30,6 +30,9 @@ public class CoreModel {
     // courseid, courseid
     private Map<String, String> corequisite;
     
+    
+    private int enrollmentLimit;
+    
     /**
      * constructor
      */

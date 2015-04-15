@@ -21,6 +21,8 @@ public class StudentModel {
     private int desiredCourses;
 
     private List<String> nextSemester;
+    
+    private int seniority;
 
     
     /**
@@ -61,6 +63,14 @@ public class StudentModel {
 
     public void setId(String id) {
 	this.id = id;
+    }
+
+    public int getSeniority() {
+        return seniority;
+    }
+
+    public void setSeniority(int seniority) {
+        this.seniority = seniority;
     }
 
 }
