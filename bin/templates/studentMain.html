@@ -6,5 +6,16 @@
 </head>
 <body>
     <p th:text="'Hello, student!!, this is your main page'" />
+    
+    <form action="#" th:action="@{/login/studentView}" th:object="${studentModel}" method="post">
+    	<p>Id: <input type="text" th:field="*{id}"  /></p>
+
+        <p>The number of desired courses: <input type="text" th:field="*{desiredCourses}"/></p>
+        
+        <p>course1:<input type="text" th:field="*{course1}"/></p>
+        <p>course2:<input type="text" th:field="*{course2}"/></p>
+       
+        <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+    </form>
 </body>
 </html>
