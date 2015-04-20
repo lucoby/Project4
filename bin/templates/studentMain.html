@@ -12,8 +12,29 @@
 
         <p>The number of desired courses: <input type="text" th:field="*{desiredCourses}"/></p>
         
-        <p>course1:<input type="text" th:field="*{course1}"/></p>
-        <p>course2:<input type="text" th:field="*{course2}"/></p>
+         <div>
+       	<table>
+			<thead>
+				<tr>
+
+					<th>
+						<button type="submit" name="addRow" th:text="addClass">Add row</button>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="course,courseStat : *{courses}">
+					<td th:text="${courseStat.count}">1</td>
+					<td><input type="text"
+						th:field="*{courses[__${courseStat.index}__]}" /></td>
+					<td>
+						<button type="submit" name="removeRow"
+							th:value="${courseStat.index}" th:text="remove">Remove row</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+    </div>
        
         <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
     </form>
