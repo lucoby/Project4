@@ -1,60 +1,37 @@
 package project4.login.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.annotation.Id;
-
 /**
- * student model
- * contains all the info inputed by the student
- * and keeps track of data related to the student
+ * student model contains all the info inputed by the student and keeps track of
+ * data related to the student
+ * 
  * @author Zhang3r
  *
  */
 public class StudentModel {
 
-    @Id
     private String id;
 
-    private String pwd;
+    private String desiredCourses;
 
-    private int desiredCourses;
+    private List<String> courses;
 
-    private List<String> nextSemester;
-    
-    private int seniority;
-
-    
     /**
      * constructor
-     * @param id
+     * 
      */
-    public StudentModel(String id) {
-	this.id = id;
+    public StudentModel() {
+
     }
 
-    public String getPwd() {
-	return pwd;
-    }
-
-    public void setPwd(String pwd) {
-	this.pwd = pwd;
-    }
-
-    public int getDesiredCourses() {
+    public String getDesiredCourses() {
 	return desiredCourses;
     }
 
-    public void setDesiredCourses(int desiredCourses) {
+    public void setDesiredCourses(String desiredCourses) {
 	this.desiredCourses = desiredCourses;
-    }
-
-    public List<String> getNextSemester() {
-	return nextSemester;
-    }
-
-    public void setNextSemester(List<String> nextSemester) {
-	this.nextSemester = nextSemester;
     }
 
     public String getId() {
@@ -65,12 +42,16 @@ public class StudentModel {
 	this.id = id;
     }
 
-    public int getSeniority() {
-        return seniority;
+    public List<String> getCourses() {
+	if (courses == null) {
+	    courses = new ArrayList<String>();
+	}
+
+	return courses;
     }
 
-    public void setSeniority(int seniority) {
-        this.seniority = seniority;
+    public void setCourses(List<String> courses) {
+	this.courses = courses;
     }
 
 }
