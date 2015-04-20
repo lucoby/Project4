@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import project4.login.model.StudentModel;
 import project4.login.model.classroom.Course;
 import project4.login.model.lpsolver.LpInput;
+import project4.login.model.lpsolver.LpOutput;
 
 class Student {
 
@@ -49,8 +50,13 @@ public class SuggestionService {
 
 	}
 
-	public SuggestionService(LpInput input) {
-
+	public SuggestionService(LpInput in) {
+		writeLpFile(in, "suggestion.lp", 5);
+		runGurobi("suggestion.lp","suggestion.sol");
+		int[][] suggestion = new int[in.getStudents().size()][in.getRequiredCourses().size()];
+		readSolFile(in,"suggestion.sol", suggestion);
+		LpOutput out = new LpOutput();
+		out.setSuggestion(suggestion);
 	}
 
 	public static LpInput constructLpInput(String studentInputs) {
