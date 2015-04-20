@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.stereotype.Service;
@@ -21,10 +22,9 @@ import project4.login.model.StudentModel;
 import project4.login.model.classroom.Course;
 import project4.login.model.lpsolver.LpInput;
 import project4.login.model.lpsolver.LpOutput;
+import project4.login.model.classroom.Student;
 
-class Student {
 
-}
 
 @Service
 public class SuggestionService {
@@ -134,7 +134,7 @@ public class SuggestionService {
 		ret.setDefaultEnrollmentLimit(500);
 
 		// Create student data from test file
-		ArrayList<StudentModel> students = new ArrayList<StudentModel>();
+		List<Student> students = new ArrayList<Student>();
 
 		int numberStudents = 0;
 		FileReader fr = null;
@@ -151,7 +151,7 @@ public class SuggestionService {
 			while ((line = br.readLine()) != null) {
 				if (line.trim() != null && line.trim().length() > 0
 						&& lineNum > 0) {
-					StudentModel s = null;
+					Student s = null;
 
 					String[] tokens = line.split("[,]+");
 					String id = (tokens[0] + "," + tokens[1] + "," + tokens[2])
@@ -165,7 +165,7 @@ public class SuggestionService {
 					} else {
 						// new line is a new student, create a student with id,
 						// password, and 5 randomly prioritized courses
-						s = new StudentModel(id);
+						s = new Student(id);
 
 						s.setPwd("password" + id.replaceAll(",", ""));
 
@@ -246,7 +246,7 @@ public class SuggestionService {
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 
-			ArrayList<StudentModel> students = (ArrayList<StudentModel>) in
+			List<Student> students =  in
 					.getStudents();
 			ArrayList<Course> courses = (ArrayList<Course>) in
 					.getRequiredCourses();
@@ -324,7 +324,7 @@ public class SuggestionService {
 			}
 
 			// PreReq Constraint
-			for (StudentModel s : students) {
+			for (Student s : students) {
 				for (String prereq : in.getPrerequisite().keySet()) {
 					int taken = 0;
 					for (String t : s.getCoursesTaken()) {
@@ -340,7 +340,7 @@ public class SuggestionService {
 			}
 
 			// Student not repeating courses Constraint
-			for (StudentModel s : students) {
+			for (Student s : students) {
 				for (Course c : courses) {
 					int taken = 0;
 					for (String t : s.getCoursesTaken()) {

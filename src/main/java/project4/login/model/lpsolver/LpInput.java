@@ -5,8 +5,9 @@ import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 
-import project4.login.model.StudentModel;
+
 import project4.login.model.classroom.Course;
+import project4.login.model.classroom.Student;
 
 public class LpInput {
 
@@ -29,7 +30,7 @@ public class LpInput {
     
     private int defaultEnrollmentLimit;
     
-    private List<StudentModel> students;
+    private List<Student> students;
 
 	public String getId() {
 		return id;
@@ -79,12 +80,12 @@ public class LpInput {
 		this.enrollmentLimit = enrollmentLimit;
 	}
 
-	public List<StudentModel> getStudents() {
+	public List<Student> getStudents() {
 		return students;
 	}
 
-	public void setStudents(List<StudentModel> students) {
-		this.students = students;
+	public void setStudents(List<Student> students2) {
+		this.students = students2;
 	}
 
 	public int getDefaultEnrollmentLimit() {
