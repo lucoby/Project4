@@ -12,10 +12,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
 import project4.login.model.StudentModel;
+import project4.login.model.classroom.Course;
+import project4.login.model.lpsolver.LpInput;
 
 class Student {
 
@@ -26,14 +30,109 @@ public class SuggestionService {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String file = "OMS-CS-CourseGrades_Final.csv";
-		lpSolve(file);
+		String studentHistory = "OMS-CS-CourseGrades_Final.csv";
+		LpInput in = constructLpInput(studentHistory);
+		
+//		for (StudentModel s:in.getStudents()) {
+//			System.out.println(s.getId());
+//			for(String c:s.getNextSemester().keySet()) {
+//				System.out.println(c+ " pref: " + s.getNextSemester().get(c));
+//			}
+//		}
+		
+		writeLpFile(in, "suggestion.lp", 5);
+		
+	}
+
+	public SuggestionService(LpInput input) {
 
 	}
 
-	public static void lpSolve(String studentInputs) {
-		// Setup students
-		ArrayList<StudentModel> students = new ArrayList<StudentModel>(600);
+	public static LpInput constructLpInput(String studentInputs) {
+		// Because random is cooldom
+		Random rand = new Random();
+		
+		// Create dummy LpInput
+		LpInput ret = new LpInput();
+
+		// Create coursesCatalog
+		ArrayList<Course> coursesCatalog = new ArrayList<Course>();
+
+		coursesCatalog.add(new Course("CS 6440"));
+		coursesCatalog.add(new Course("CS 7641"));
+		coursesCatalog.add(new Course("CS 6475"));
+		coursesCatalog.add(new Course("CS 6300"));
+		coursesCatalog.add(new Course("CS 8802"));
+		coursesCatalog.add(new Course("CS 7637"));
+		coursesCatalog.add(new Course("CS 6310"));
+		coursesCatalog.add(new Course("CS 8803"));
+		coursesCatalog.add(new Course("CS 4495"));
+		coursesCatalog.add(new Course("CS 6210"));
+		coursesCatalog.add(new Course("CS 6505"));
+		coursesCatalog.add(new Course("CS 6250"));
+		coursesCatalog.add(new Course("CS 6290"));
+		coursesCatalog.add(new Course("CS 6035"));
+		coursesCatalog.add(new Course("CS 7646"));
+
+		ret.setCoursesCatalog(coursesCatalog);
+
+		// Create dummy requiredCourses courses that will be offered next
+		// semester
+		ArrayList<Course> requiredCourses = new ArrayList<Course>();
+
+		requiredCourses.add(new Course("CS 6440"));
+		requiredCourses.add(new Course("CS 7641"));
+		requiredCourses.add(new Course("CS 6475"));
+		requiredCourses.add(new Course("CS 6300"));
+		requiredCourses.add(new Course("CS 7637"));
+		requiredCourses.add(new Course("CS 6310"));
+		requiredCourses.add(new Course("CS 8803"));
+		requiredCourses.add(new Course("CS 4495"));
+		requiredCourses.add(new Course("CS 6210"));
+		requiredCourses.add(new Course("CS 6505"));
+		requiredCourses.add(new Course("CS 6250"));
+		requiredCourses.add(new Course("CS 6290"));
+		requiredCourses.add(new Course("CS 6035"));
+		requiredCourses.add(new Course("CS 7646"));
+
+		ret.setRequiredCourses(requiredCourses);
+
+		// Create prereq data
+		HashMap<String, String> prerequisite = new HashMap<String, String>();
+
+		prerequisite.put("7641", "7646");
+		prerequisite.put("6300", "6440");
+
+		ret.setPrerequisite(prerequisite);
+
+		// Create correq data
+		HashMap<String, String> corequisite = new HashMap<String, String>();
+
+		ret.setCorequisite(corequisite);
+
+		// Create dummy enrollment limit data
+		HashMap<String, Integer> enrollmentLimit = new HashMap<String, Integer>();
+
+		enrollmentLimit.put("CS 6440", 100);
+		enrollmentLimit.put("CS 7641", 100);
+		enrollmentLimit.put("CS 6475", 100);
+		enrollmentLimit.put("CS 6300", 100);
+		enrollmentLimit.put("CS 7637", 100);
+		enrollmentLimit.put("CS 6310", 100);
+		enrollmentLimit.put("CS 8803", 100);
+		enrollmentLimit.put("CS 4495", 100);
+		enrollmentLimit.put("CS 6210", 100);
+		enrollmentLimit.put("CS 6505", 100);
+		enrollmentLimit.put("CS 6250", 100);
+		enrollmentLimit.put("CS 6290", 100);
+		enrollmentLimit.put("CS 6035", 100);
+		enrollmentLimit.put("CS 7646", 100);
+
+		ret.setEnrollmentLimit(enrollmentLimit);
+
+		// Create student data from test file
+		ArrayList<StudentModel> students = new ArrayList<StudentModel>();
+
 		int numberStudents = 0;
 		FileReader fr = null;
 		BufferedReader br = null;
@@ -44,25 +143,50 @@ public class SuggestionService {
 
 			String line;
 			int lineNum = 0;
+
+			// Read each line
 			while ((line = br.readLine()) != null) {
 				if (line.trim() != null && line.trim().length() > 0
 						&& lineNum > 0) {
 					StudentModel s = null;
-					System.out.println(line);
-					// System.out.println(line.replaceAll("[,]+"," "));
-					
+
 					String[] tokens = line.split("[,]+");
 					String id = (tokens[0] + "," + tokens[1] + "," + tokens[2])
 							.replace("\"", "");
+
 					if (numberStudents - 1 >= 0
 							&& students.get(numberStudents - 1).getId()
 									.equals(id)) {
+						//new line is not a new student
 						s = students.get(numberStudents - 1);
 					} else {
+						//new line is a new student, create a student with id, password, and 5 randomly prioritized courses
 						s = new StudentModel(id);
+						
+						s.setPwd("password" + id.replaceAll(",", ""));
+						
+						s.setDesiredCourses(5);
+						
+						HashMap<String, Integer> nextSemester = new HashMap<String, Integer>();
+						String randCourse = getRandomCourse(rand,
+								requiredCourses, nextSemester);
+						nextSemester.put(randCourse,1);
+						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
+						nextSemester.put(randCourse,2);
+						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
+						nextSemester.put(randCourse,3);
+						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
+						nextSemester.put(randCourse,4);
+						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
+						nextSemester.put(randCourse,5);
+						
+						s.setNextSemester(nextSemester);
+						
 						students.add(s);
 						numberStudents++;
 					}
+					
+					// Add the course if the student didn't withdraw and increase the student's seniority
 					if (tokens.length == 9) {
 						if (s.getCoursesTaken() == null) {
 							s.setCoursesTaken(new ArrayList<String>());
@@ -72,9 +196,6 @@ public class SuggestionService {
 						}
 						s.setSeniority(s.getSeniority() + 1);
 					}
-					 System.out.println(students.get(numberStudents -
-					 1).getSeniority());
-
 				}
 				lineNum++;
 			}
@@ -90,67 +211,22 @@ public class SuggestionService {
 			}
 		}
 
-		// for (ArrayList<Integer> s : students) {
-		// for (Integer c : s) {
-		// System.out.print(c + " ");
-		// }
-		// System.out.println();
-		// }
-
-		// Setup courses
-		int numberCourses = 18;
-
-		// Fall Start
-		boolean[][] courseOfferings = { { true, false, false },
-				{ true, true, true }, { true, true, true },
-				{ true, true, true }, { false, false, true },
-				{ true, true, true }, { true, false, false },
-				{ true, true, true }, { true, true, true },
-				{ false, false, true }, { true, false, false },
-				{ true, true, true }, { true, true, true },
-				{ false, false, true }, { true, false, false },
-				{ false, false, true }, { true, false, false },
-				{ false, false, true } };
-
-		String[][] preRequisites = { { "7641", "7646" }, { "6300", "6440" } };
-
-		// Setup semester
-		int numberSemesters = 12;
-
-		// Write .lp file
-		// writeLpFile("student_schedule.lp", students, courseOfferings,
-		// preRequisites,
-		// numberStudents, numberCourses, numberSemesters);
-		//
-		// // Run Gurobi
-		// runGurobi("student_schedule.lp", "student_schedule.sol");
-		//
-		// // Read in .sol file
-		// int[][][] schedule = new
-		// int[numberStudents][numberCourses][numberSemesters];
-		// readSolFile("student_schedule.sol", schedule);
-		//
-		// // Create schedule from .sol file
-		// writeOptimizedSchedule("optimized_schedule.txt", schedule,
-		// numberStudents,
-		// numberCourses, numberSemesters);
-
-		// Using old lp file...
-		// runGurobi("student_schedule_old.lp", "student_schedule_old.sol");
-		//
-		// int[][][] schedule = new
-		// int[numberStudents][numberCourses][numberSemesters];
-		// readOldSolFile("student_schedule_old.sol", schedule);
-		//
-		// writeOptimizedSchedule("optimized_schedule_old.txt", schedule,
-		// numberStudents,
-		// numberCourses, numberSemesters);
+		ret.setStudents(students);
+		
+		return ret;
 	}
 
-	private static void writeLpFile(String lpFile,
-			ArrayList<ArrayList<Integer>> students,
-			boolean[][] courseOfferings, int[][] preRequisites,
-			int numberStudents, int numberCourses, int numberSemesters) {
+	private static String getRandomCourse(Random rand,
+			ArrayList<Course> requiredCourses,
+			HashMap<String, Integer> desiredCourse) {
+		String randCourse = requiredCourses.get(rand.nextInt(requiredCourses.size())).getName();
+		while(desiredCourse.containsKey(randCourse)) {
+			randCourse = requiredCourses.get(rand.nextInt(requiredCourses.size())).getName();
+		}
+		return randCourse;
+	}
+
+	private static void writeLpFile(LpInput in, String lpFile, int maxPref) {
 		try {
 			File file = new File(lpFile);
 			if (!file.exists()) {
@@ -160,99 +236,49 @@ public class SuggestionService {
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 
+			ArrayList<StudentModel> s = (ArrayList<StudentModel>) in.getStudents();
 			// Objective Statement
-			bw.write("Min X");
+			bw.write("Max X");
 			bw.newLine();
 
 			// Constraints
 			bw.write("Subject To");
 			bw.newLine();
 
-			// Enrollment Constraint
-			for (int i = 1; i <= numberStudents; i++) {
-				for (int k = 1; k <= numberSemesters; k++) {
-					for (int j = 1; j < numberCourses; j++) {
-						bw.write(" y_" + i + "_" + j + "_" + k + " +");
+			// Maximization function
+			for (int i = 0; i < s.size(); i++) {
+				int j = 0;
+				for (String c: s.get(i).getNextSemester().keySet()) {
+					j++;
+					if (i == s.size() - 1 && j == s.get(i).getDesiredCourses()) {
+						int senPref = ((s.get(i).getSeniority() * maxPref) + (maxPref - s.get(i).getNextSemester().get(c)));
+						bw.write(senPref + " y_" + s.get(i).getId() + "_" + c.substring(3) + " - X = 0");
+					} else {
+						int senPref = ((s.get(i).getSeniority() * maxPref) + (maxPref - s.get(i).getNextSemester().get(c)));
+						System.out.print(senPref + " y_" + s.get(i).getId() + "_" + c.substring(3) + " + ");
 					}
-					bw.write(" y_" + i + "_" + numberCourses + "_" + k
-							+ " <= 2");
-					bw.newLine();
 				}
 			}
+			bw.newLine();
+			
+			
+			// Enrollment Constraint
+
 
 			// Course Availability and Course Capacity Constraint
-			for (int j = 1; j <= numberCourses; j++) {
-				for (int k = 1; k <= numberSemesters; k++) {
-					for (int i = 1; i < numberStudents; i++) {
-						bw.write(" y_" + i + "_" + j + "_" + k + " +");
-					}
-					if (courseOfferings[j - 1][(k - 1) % 3]) {
-						bw.write(" y_" + numberStudents + "_" + j + "_" + k
-								+ " - X <= 0");
-						bw.newLine();
-					} else {
-						bw.write(" y_" + numberStudents + "_" + j + "_" + k
-								+ " = 0");
-						bw.newLine();
-					}
-				}
-			}
+
 
 			// PreReq Constraint
-			int m = numberSemesters;
-			for (int i = 1; i <= numberStudents; i++) {
-				for (int j = 0; j < preRequisites.length; j++) {
-					for (int k = 1; k < numberSemesters; k++) {
-						int pre = m - k;
-						int post = pre + 1;
-						bw.write(" " + post + " y_" + i + "_"
-								+ preRequisites[j][1] + "_" + k + " - " + pre
-								+ " y_" + i + "_" + preRequisites[j][0] + "_"
-								+ k + " +");
-					}
 
-					bw.write(" " + 1 + " y_" + i + "_" + preRequisites[j][1]
-							+ "_" + m + " - " + 0 + " y_" + i + "_"
-							+ preRequisites[j][0] + "_" + m + " <= 0");
-					bw.newLine();
-				}
-			}
 
-			// Student Schedule Constraint
-			int c;
-			for (int i = 1; i <= numberStudents; i++) {
-				c = 0;
-				for (int j = 1; j <= numberCourses; j++) {
-					for (int k = 1; k < numberSemesters; k++) {
-						bw.write(" y_" + i + "_" + j + "_" + k + " +");
-					}
-					while (students.get(i - 1).get(c) < j
-							&& c < students.get(i - 1).size() - 1) {
-						c++;
-					}
-					if (students.get(i - 1).get(c) == j) {
-						bw.write(" y_" + i + "_" + j + "_" + numberSemesters
-								+ " = 1");
-						bw.newLine();
-					} else {
-						bw.write(" y_" + i + "_" + j + "_" + numberSemesters
-								+ " = 0");
-						bw.newLine();
-					}
-				}
-			}
+			// Student not repeating courses Constraint
+
 
 			// Variables
 			bw.write("Binary");
 			bw.newLine();
-			for (int i = 1; i <= numberStudents; i++) {
-				for (int j = 1; j <= numberCourses; j++) {
-					for (int k = 1; k <= numberSemesters; k++) {
-						bw.write("y_" + i + "_" + j + "_" + k);
-						bw.newLine();
-					}
-				}
-			}
+
+			
 			bw.write("end");
 			bw.newLine();
 			bw.close();

@@ -1,79 +1,80 @@
 package project4.login.model;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.annotation.Id;
 
 /**
- * student model
- * contains all the info inputed by the student
- * and keeps track of data related to the student
+ * student model contains all the info inputed by the student and keeps track of
+ * data related to the student
+ * 
  * @author Zhang3r
  *
  */
 public class StudentModel {
 
-    @Id
-    private String id;
+	@Id
+	private String id;
 
-    private String pwd;
+	private String pwd;
 
-    private int desiredCourses;
+	private int desiredCourses;
 
-    private List<String> nextSemester;
-    
-    private int seniority;
-    
-    private List<String> coursesTaken;
+	private Map<String,Integer> nextSemester;
 
-    
-    /**
-     * constructor
-     * @param id
-     */
-    public StudentModel(String id) {
-	this.id = id;
-    }
+	private int seniority;
 
-    public String getPwd() {
-	return pwd;
-    }
+	private List<String> coursesTaken;
 
-    public void setPwd(String pwd) {
-	this.pwd = pwd;
-    }
+	/**
+	 * constructor
+	 * 
+	 * @param id
+	 */
+	public StudentModel(String id) {
+		this.id = id;
+	}
 
-    public int getDesiredCourses() {
-	return desiredCourses;
-    }
+	public String getPwd() {
+		return pwd;
+	}
 
-    public void setDesiredCourses(int desiredCourses) {
-	this.desiredCourses = desiredCourses;
-    }
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
+	}
 
-    public List<String> getNextSemester() {
-	return nextSemester;
-    }
+	public int getDesiredCourses() {
+		return desiredCourses;
+	}
 
-    public void setNextSemester(List<String> nextSemester) {
-	this.nextSemester = nextSemester;
-    }
+	public void setDesiredCourses(int desiredCourses) {
+		this.desiredCourses = desiredCourses;
+	}
 
-    public String getId() {
-	return id;
-    }
+	public Map<String,Integer> getNextSemester() {
+		return nextSemester;
+	}
 
-    public void setId(String id) {
-	this.id = id;
-    }
+	public void setNextSemester(Map<String,Integer> nextSemester) {
+		this.nextSemester = nextSemester;
+	}
 
-    public int getSeniority() {
-        return seniority;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setSeniority(int seniority) {
-        this.seniority = seniority;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public int getSeniority() {
+		return seniority;
+	}
+
+	public void setSeniority(int seniority) {
+		this.seniority = seniority;
+	}
 
 	public List<String> getCoursesTaken() {
 		return coursesTaken;
