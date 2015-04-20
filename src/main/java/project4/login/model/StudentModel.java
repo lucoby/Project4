@@ -23,6 +23,8 @@ public class StudentModel {
     private List<String> nextSemester;
     
     private int seniority;
+    
+    private List<String> coursesTaken;
 
     
     /**
@@ -72,5 +74,13 @@ public class StudentModel {
     public void setSeniority(int seniority) {
         this.seniority = seniority;
     }
+
+	public List<String> getCoursesTaken() {
+		return coursesTaken;
+	}
+
+	public void setCoursesTaken(List<String> coursesTaken) {
+		this.coursesTaken = coursesTaken;
+	}
 
 }
