@@ -1,10 +1,90 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Getting Started: Serving Web Content</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Getting Started: Serving Web Content</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-    <p th:text="'Hello, admin!, this is your main page'" />
+	<p th:text="'Hello, admin!, this is your main page'" />
+	<form action="#" th:action="@{/login/adminView}"
+		th:object="${adminModel}" method="post">
+
+		<p>
+			The limit on class enrollment: <input type="text"
+				th:field="*{classEnrollmentLimit}" />
+		</p>
+		<table>
+			<thead>
+				<tr>
+
+					<th>
+						<button type="submit" name="addCourse" th:text="addCourse">Add
+							Course</button>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="course,courseStat : *{coursesForSemester}">
+					<td th:text="${courseStat.count}">1</td>
+					<td><input type="text"
+						th:field="*{coursesForSemester[__${courseStat.index}__]}" /></td>
+					<td>
+						<button type="submit" name="removeCourse"
+							th:value="${courseStat.index}" th:text="remove">Remove
+							Course</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<table>
+			<thead>
+				<tr>
+
+					<th>
+						<button type="submit" name="addTA" th:text="addTA">Add TA</button>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="TA,TAStat : *{TAs}">
+					<td th:text="${TAStat.count}">1</td>
+					<td><input type="text" th:field="*{TAs[__${TAStat.index}__]}" /></td>
+					<td>
+						<button type="submit" name="removeTA" th:value="${TAStat.index}"
+							th:text="remove">Remove TA</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<table>
+			<thead>
+				<tr>
+
+					<th>
+						<button type="submit" name="addProf" th:text="addProf">Add
+							Prof</button>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="professor,professorStat : *{professors}">
+					<td th:text="${professorStat.count}">1</td>
+					<td><input type="text"
+						th:field="*{professors[__${professorStat.index}__]}" /></td>
+					<td>
+						<button type="submit" name="removeProf"
+							th:value="${professorStat.index}" th:text="remove">Remove
+							Prof</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>
+			<input type="submit" value="Submit" /> <input type="reset"
+				value="Reset" />
+		</p>
+	</form>
 </body>
 </html>
