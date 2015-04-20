@@ -32,16 +32,21 @@ public class SuggestionService {
 		// TODO Auto-generated method stub
 		String studentHistory = "OMS-CS-CourseGrades_Final.csv";
 		LpInput in = constructLpInput(studentHistory);
-		
-//		for (StudentModel s:in.getStudents()) {
-//			System.out.println(s.getId());
-//			for(String c:s.getNextSemester().keySet()) {
-//				System.out.println(c+ " pref: " + s.getNextSemester().get(c));
-//			}
-//		}
-		
+
+		// for (StudentModel s : in.getStudents()) {
+		// System.out.println(s.getId());
+		// for (String c : s.getCoursesTaken()) {
+		// System.out.println(c);
+		// }
+		// }
+
 		writeLpFile(in, "suggestion.lp", 5);
+		runGurobi("suggestion.lp","suggestion.sol");
+		int[][] suggestion = new int[in.getStudents().size()][in.getRequiredCourses().size()];
+		readSolFile(in,"suggestion.sol", suggestion);
+		writeOptimizedSchedule("suggested_schedule.txt",suggestion,in);
 		
+
 	}
 
 	public SuggestionService(LpInput input) {
@@ -51,7 +56,7 @@ public class SuggestionService {
 	public static LpInput constructLpInput(String studentInputs) {
 		// Because random is cooldom
 		Random rand = new Random();
-		
+
 		// Create dummy LpInput
 		LpInput ret = new LpInput();
 
@@ -100,8 +105,8 @@ public class SuggestionService {
 		// Create prereq data
 		HashMap<String, String> prerequisite = new HashMap<String, String>();
 
-		prerequisite.put("7641", "7646");
-		prerequisite.put("6300", "6440");
+		prerequisite.put("CS 7641", "CS 7646");
+		prerequisite.put("CS 6300", "CS 6440");
 
 		ret.setPrerequisite(prerequisite);
 
@@ -113,22 +118,14 @@ public class SuggestionService {
 		// Create dummy enrollment limit data
 		HashMap<String, Integer> enrollmentLimit = new HashMap<String, Integer>();
 
-		enrollmentLimit.put("CS 6440", 100);
-		enrollmentLimit.put("CS 7641", 100);
-		enrollmentLimit.put("CS 6475", 100);
-		enrollmentLimit.put("CS 6300", 100);
-		enrollmentLimit.put("CS 7637", 100);
-		enrollmentLimit.put("CS 6310", 100);
-		enrollmentLimit.put("CS 8803", 100);
-		enrollmentLimit.put("CS 4495", 100);
-		enrollmentLimit.put("CS 6210", 100);
-		enrollmentLimit.put("CS 6505", 100);
-		enrollmentLimit.put("CS 6250", 100);
-		enrollmentLimit.put("CS 6290", 100);
-		enrollmentLimit.put("CS 6035", 100);
-		enrollmentLimit.put("CS 7646", 100);
+		enrollmentLimit.put("CS 6300", 550);
+		enrollmentLimit.put("CS 6310", 550);
 
 		ret.setEnrollmentLimit(enrollmentLimit);
+
+		// Set default enrollment limit
+
+		ret.setDefaultEnrollmentLimit(500);
 
 		// Create student data from test file
 		ArrayList<StudentModel> students = new ArrayList<StudentModel>();
@@ -157,43 +154,48 @@ public class SuggestionService {
 					if (numberStudents - 1 >= 0
 							&& students.get(numberStudents - 1).getId()
 									.equals(id)) {
-						//new line is not a new student
+						// new line is not a new student
 						s = students.get(numberStudents - 1);
 					} else {
-						//new line is a new student, create a student with id, password, and 5 randomly prioritized courses
+						// new line is a new student, create a student with id,
+						// password, and 5 randomly prioritized courses
 						s = new StudentModel(id);
-						
+
 						s.setPwd("password" + id.replaceAll(",", ""));
-						
+
 						s.setDesiredCourses(5);
-						
+
 						HashMap<String, Integer> nextSemester = new HashMap<String, Integer>();
 						String randCourse = getRandomCourse(rand,
 								requiredCourses, nextSemester);
-						nextSemester.put(randCourse,1);
-						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
-						nextSemester.put(randCourse,2);
-						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
-						nextSemester.put(randCourse,3);
-						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
-						nextSemester.put(randCourse,4);
-						randCourse = getRandomCourse(rand, requiredCourses, nextSemester);
-						nextSemester.put(randCourse,5);
-						
+						nextSemester.put(randCourse, 1);
+						randCourse = getRandomCourse(rand, requiredCourses,
+								nextSemester);
+						nextSemester.put(randCourse, 2);
+						randCourse = getRandomCourse(rand, requiredCourses,
+								nextSemester);
+						nextSemester.put(randCourse, 3);
+						randCourse = getRandomCourse(rand, requiredCourses,
+								nextSemester);
+						nextSemester.put(randCourse, 4);
+						randCourse = getRandomCourse(rand, requiredCourses,
+								nextSemester);
+						nextSemester.put(randCourse, 5);
+
 						s.setNextSemester(nextSemester);
-						
+
 						students.add(s);
+
+						s.setCoursesTaken(new ArrayList<String>());
+
+						s.setSeniority(0);
 						numberStudents++;
 					}
-					
-					// Add the course if the student didn't withdraw and increase the student's seniority
+
+					// Add the course if the student didn't withdraw and
+					// increase the student's seniority
 					if (tokens.length == 9) {
-						if (s.getCoursesTaken() == null) {
-							s.setCoursesTaken(new ArrayList<String>());
-							s.getCoursesTaken().add(tokens[4]);
-						} else {
-							s.getCoursesTaken().add(tokens[4]);
-						}
+						s.getCoursesTaken().add(tokens[4]);
 						s.setSeniority(s.getSeniority() + 1);
 					}
 				}
@@ -212,16 +214,18 @@ public class SuggestionService {
 		}
 
 		ret.setStudents(students);
-		
+
 		return ret;
 	}
 
 	private static String getRandomCourse(Random rand,
 			ArrayList<Course> requiredCourses,
 			HashMap<String, Integer> desiredCourse) {
-		String randCourse = requiredCourses.get(rand.nextInt(requiredCourses.size())).getName();
-		while(desiredCourse.containsKey(randCourse)) {
-			randCourse = requiredCourses.get(rand.nextInt(requiredCourses.size())).getName();
+		String randCourse = requiredCourses.get(
+				rand.nextInt(requiredCourses.size())).getName();
+		while (desiredCourse.containsKey(randCourse)) {
+			randCourse = requiredCourses.get(
+					rand.nextInt(requiredCourses.size())).getName();
 		}
 		return randCourse;
 	}
@@ -236,7 +240,13 @@ public class SuggestionService {
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 
-			ArrayList<StudentModel> s = (ArrayList<StudentModel>) in.getStudents();
+			ArrayList<StudentModel> students = (ArrayList<StudentModel>) in
+					.getStudents();
+			ArrayList<Course> courses = (ArrayList<Course>) in
+					.getRequiredCourses();
+			ArrayList<Course> allCourses = (ArrayList<Course>) in
+					.getCoursesCatalog();
+
 			// Objective Statement
 			bw.write("Max X");
 			bw.newLine();
@@ -246,39 +256,107 @@ public class SuggestionService {
 			bw.newLine();
 
 			// Maximization function
-			for (int i = 0; i < s.size(); i++) {
+			for (int i = 0; i < students.size(); i++) {
 				int j = 0;
-				for (String c: s.get(i).getNextSemester().keySet()) {
+				for (String c : students.get(i).getNextSemester().keySet()) {
 					j++;
-					if (i == s.size() - 1 && j == s.get(i).getDesiredCourses()) {
-						int senPref = ((s.get(i).getSeniority() * maxPref) + (maxPref - s.get(i).getNextSemester().get(c)));
-						bw.write(senPref + " y_" + s.get(i).getId() + "_" + c.substring(3) + " - X = 0");
+					if (i == students.size() - 1
+							&& j == students.get(i).getDesiredCourses()) {
+						int senPref = ((students.get(i).getSeniority() * maxPref) + (maxPref - students
+								.get(i).getNextSemester().get(c)));
+						bw.write(senPref + " y_" + students.get(i).getId()
+								+ "_" + c.substring(3) + " - X = 0");
 					} else {
-						int senPref = ((s.get(i).getSeniority() * maxPref) + (maxPref - s.get(i).getNextSemester().get(c)));
-						System.out.print(senPref + " y_" + s.get(i).getId() + "_" + c.substring(3) + " + ");
+						int senPref = ((students.get(i).getSeniority() * maxPref) + (maxPref - students
+								.get(i).getNextSemester().get(c)));
+						bw.write(senPref + " y_" + students.get(i).getId()
+								+ "_" + c.substring(3) + " + ");
 					}
 				}
 			}
 			bw.newLine();
-			
-			
+
 			// Enrollment Constraint
 
+			for (int i = 0; i < students.size(); i++) {
+				for (int j = 0; j < courses.size() - 1; j++) {
+					bw.write("y_" + students.get(i).getId() + "_"
+							+ courses.get(j).getName().substring(3) + " + ");
+				}
+				bw.write(" y_"
+						+ students.get(i).getId()
+						+ "_"
+						+ courses.get(courses.size() - 1).getName()
+								.substring(3) + " <= 2");
+				bw.newLine();
+			}
 
 			// Course Availability and Course Capacity Constraint
-
+			for (int i = 0; i < allCourses.size(); i++) {
+				for (int j = 0; j < students.size() - 1; j++) {
+					bw.write("y_" + students.get(j).getId() + "_"
+							+ allCourses.get(i).getName().substring(3) + " + ");
+				}
+				int limit = 0;
+				boolean courseOffered = false;
+				for (Course c : courses) {
+					if (c.getName().equals(allCourses.get(i).getName())) {
+						courseOffered = true;
+					}
+				}
+				if (in.getEnrollmentLimit().containsKey(
+						allCourses.get(i).getName())) {
+					limit = in.getEnrollmentLimit().get(
+							allCourses.get(i).getName());
+				} else if (courseOffered) {
+					limit = in.getDefaultEnrollmentLimit();
+				}
+				bw.write(" y_" + students.get(students.size() - 1).getId()
+						+ "_" + allCourses.get(i).getName().substring(3)
+						+ " <= " + limit);
+				bw.newLine();
+			}
 
 			// PreReq Constraint
-
+			for (StudentModel s : students) {
+				for (String prereq : in.getPrerequisite().keySet()) {
+					int taken = 0;
+					for (String t : s.getCoursesTaken()) {
+						if (t.equals(prereq)) {
+							taken = 1;
+						}
+					}
+					bw.write("y_" + s.getId() + "_"
+							+ in.getPrerequisite().get(prereq).substring(3)
+							+ " <= " + taken);
+					bw.newLine();
+				}
+			}
 
 			// Student not repeating courses Constraint
-
+			for (StudentModel s : students) {
+				for (Course c : courses) {
+					int taken = 0;
+					for (String t : s.getCoursesTaken()) {
+						if (t.equals(c.getName())) {
+							taken = 1;
+						}
+					}
+					bw.write(taken + " y_" + s.getId() + "_"
+							+ c.getName().substring(3) + " < 1");
+					bw.newLine();
+				}
+			}
 
 			// Variables
 			bw.write("Binary");
 			bw.newLine();
-
-			
+			for (int i = 0; i < students.size(); i++) {
+				for (int j = 0; j < allCourses.size() - 1; j++) {
+					bw.write("y_" + students.get(i).getId() + "_" + allCourses.get(j).getName().substring(3));
+					bw.newLine();
+				}
+			}
 			bw.write("end");
 			bw.newLine();
 			bw.close();
@@ -331,7 +409,7 @@ public class SuggestionService {
 		}
 	}
 
-	private static void readSolFile(String solFile, int[][][] schedule) {
+	private static void readSolFile(LpInput in, String solFile, int[][] suggestion) {
 		FileReader fr = null;
 		BufferedReader br = null;
 
@@ -344,24 +422,35 @@ public class SuggestionService {
 			while ((line = br.readLine()) != null) {
 				if (line.trim() != null && line.trim().length() > 0
 						&& line.matches("y_\\d.*")) {
-					// System.out.println(line);
-
+//					 System.out.println(line.replaceAll("[\\s_]+", " "));
+					
 					String[] t = line.split("[\\s_]+");
-					schedule[Integer.valueOf(t[1]) - 1][Integer.valueOf(t[2]) - 1][Integer
-							.valueOf(t[3]) - 1] = Integer.valueOf(t[4]);
-
+					int s = -1;
+					for (int i = 0; i < in.getStudents().size(); i++) {
+						if (t[1].equals(in.getStudents().get(i).getId())) {
+							s = i;
+						}
+					}
+					int c = -1;
+					for (int i = 0; i < in.getRequiredCourses().size(); i++) {
+						if (t[2].equals(in.getRequiredCourses().get(i).getName().substring(3))) {
+							c = i;
+						}
+					}
+					if (! (c == -1 || s == -1)) {
+						suggestion[s][c] = Integer.valueOf(t[3]);
+					}
 				}
 
 			}
 
-			// for (int i = 0; i < numberStudents; i++) {
-			// for (int j = 0; j < numberCourses; j++) {
-			// for (int k = 0; k < numberSemesters; k++) {
-			// System.out.print(schedule[i][j][k]);
-			// }
-			// System.out.println();
-			// }
-			// }
+//			for (int i = 0; i < in.getStudents().size(); i++) {
+//				for (int j = 0; j < in.getRequiredCourses().size(); j++) {
+//					System.out.print(suggestion[i][j] + " " );
+//				}
+//				System.out.println();
+//			}
+//			System.out.println(in.getStudents().size());
 
 		} catch (NumberFormatException | IOException e) {
 			// TODO Auto-generated catch block
@@ -376,56 +465,11 @@ public class SuggestionService {
 		}
 	}
 
-	private static void readOldSolFile(String solFile, int[][][] schedule) {
-		FileReader fr = null;
-		BufferedReader br = null;
 
+	private static void writeOptimizedSchedule(String suggestedSchedule,
+			int[][] suggestion, LpInput in) {
 		try {
-			fr = new FileReader(solFile);
-			br = new BufferedReader(fr);
-
-			String line;
-
-			while ((line = br.readLine()) != null) {
-				if (line.trim() != null && line.trim().length() > 0
-						&& line.matches("y\\d.*")) {
-					// System.out.println(line);
-
-					String[] t = line.split("[\\sy_]+");
-					schedule[Integer.valueOf(t[1]) - 1][Integer.valueOf(t[2]) - 1][Integer
-							.valueOf(t[3]) - 1] = Integer.valueOf(t[4]);
-
-				}
-
-			}
-
-			// for (int i = 0; i < numberStudents; i++) {
-			// for (int j = 0; j < numberCourses; j++) {
-			// for (int k = 0; k < numberSemesters; k++) {
-			// System.out.print(schedule[i][j][k]);
-			// }
-			// System.out.println();
-			// }
-			// }
-
-		} catch (NumberFormatException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			try {
-				br.close();
-				fr.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private static void writeOptimizedSchedule(String optimizedSchedule,
-			int[][][] schedule, int numberStudents, int numberCourses,
-			int numberSemesters) {
-		try {
-			File file = new File(optimizedSchedule);
+			File file = new File(suggestedSchedule);
 			if (!file.exists()) {
 				file.createNewFile();
 			}
@@ -433,61 +477,17 @@ public class SuggestionService {
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 
-			int year = 15;
-			String lineSem = "";
-			int coursesThisSemester = 0;
-			for (int k = 0; k < numberSemesters; k++) {
-				switch ((k + 2) % 3) {
-				case 2:
-					lineSem = lineSem + "FA" + String.format("%02d", year)
-							+ " ";
-					year++;
-					break;
-				case 0:
-					lineSem = lineSem + "SP" + String.format("%02d", year)
-							+ " ";
-					break;
-				case 1:
-					lineSem = lineSem + "SU" + String.format("%02d", year)
-							+ " ";
-					break;
-				}
-			}
-			for (int i = 0; i < numberStudents; i++) {
-				bw.write("Student " + (i + 1) + ":");
-				bw.newLine();
-				bw.write(lineSem);
+			for (int i = 0; i < in.getStudents().size(); i++) {
+				bw.write("Student " + in.getStudents().get(i).getId() + "'s recommended courses:");
 				bw.newLine();
 
-				String line1 = "";
-				String line2 = "";
-				for (int k = 0; k < numberSemesters; k++) {
-					coursesThisSemester = 0;
-					for (int j = 0; j < numberCourses; j++) {
-						if (schedule[i][j][k] == 1) {
-							if (coursesThisSemester == 0) {
-								line1 = line1 + String.format("%02d", j + 1)
-										+ "   ";
-								coursesThisSemester++;
-							} else if (coursesThisSemester == 1) {
-								line2 = line2 + String.format("%02d", j + 1)
-										+ "   ";
-								coursesThisSemester++;
-							}
-						}
-					}
-					if (coursesThisSemester == 0) {
-						line1 = line1 + "     ";
-						line2 = line2 + "     ";
-					} else if (coursesThisSemester == 1) {
-						line2 = line2 + "     ";
+				for (int j = 0; j < in.getRequiredCourses().size(); j++) {
+					if(suggestion[i][j] == 1) {
+						bw.write(in.getRequiredCourses().get(j).getName());
+						bw.newLine();
 					}
 				}
 
-				bw.write(line1);
-				bw.newLine();
-				bw.write(line2);
-				bw.newLine();
 				bw.newLine();
 			}
 

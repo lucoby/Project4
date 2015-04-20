@@ -27,6 +27,8 @@ public class LpInput {
     
     private Map<String, Integer> enrollmentLimit;
     
+    private int defaultEnrollmentLimit;
+    
     private List<StudentModel> students;
 
 	public String getId() {
@@ -83,5 +85,13 @@ public class LpInput {
 
 	public void setStudents(List<StudentModel> students) {
 		this.students = students;
+	}
+
+	public int getDefaultEnrollmentLimit() {
+		return defaultEnrollmentLimit;
+	}
+
+	public void setDefaultEnrollmentLimit(int defaultEnrollmentLimit) {
+		this.defaultEnrollmentLimit = defaultEnrollmentLimit;
 	}
 }
