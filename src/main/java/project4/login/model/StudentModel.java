@@ -1,9 +1,8 @@
 package project4.login.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.data.annotation.Id;
 
 /**
  * student model contains all the info inputed by the student and keeps track of
@@ -14,74 +13,46 @@ import org.springframework.data.annotation.Id;
  */
 public class StudentModel {
 
-	@Id
-	private String id;
+    private String id;
 
-	private String pwd;
+    private String desiredCourses;
 
-	private int desiredCourses;
+    private List<String> courses;
 
-	private Map<String,Integer> nextSemester;
+    /**
+     * constructor
+     * 
+     */
+    public StudentModel() {
 
-	private int seniority;
+    }
 
-	private List<String> coursesTaken;
+    public String getDesiredCourses() {
+	return desiredCourses;
+    }
 
-	/**
-	 * constructor
-	 * 
-	 * @param id
-	 */
-	public StudentModel(String id) {
-		this.id = id;
+    public void setDesiredCourses(String desiredCourses) {
+	this.desiredCourses = desiredCourses;
+    }
+
+    public String getId() {
+	return id;
+    }
+
+    public void setId(String id) {
+	this.id = id;
+    }
+
+    public List<String> getCourses() {
+	if (courses == null) {
+	    courses = new ArrayList<String>();
 	}
 
-	public String getPwd() {
-		return pwd;
-	}
+	return courses;
+    }
 
-	public void setPwd(String pwd) {
-		this.pwd = pwd;
-	}
-
-	public int getDesiredCourses() {
-		return desiredCourses;
-	}
-
-	public void setDesiredCourses(int desiredCourses) {
-		this.desiredCourses = desiredCourses;
-	}
-
-	public Map<String,Integer> getNextSemester() {
-		return nextSemester;
-	}
-
-	public void setNextSemester(Map<String,Integer> nextSemester) {
-		this.nextSemester = nextSemester;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public int getSeniority() {
-		return seniority;
-	}
-
-	public void setSeniority(int seniority) {
-		this.seniority = seniority;
-	}
-
-	public List<String> getCoursesTaken() {
-		return coursesTaken;
-	}
-
-	public void setCoursesTaken(List<String> coursesTaken) {
-		this.coursesTaken = coursesTaken;
-	}
+    public void setCourses(List<String> courses) {
+	this.courses = courses;
+    }
 
 }
