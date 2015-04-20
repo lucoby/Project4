@@ -24,7 +24,8 @@ public class MongoTest {
 
     @Test
     public void test() {
-	StudentModel student1 = new StudentModel("123");
+	StudentModel student1 = new StudentModel();
+	student1.setId("123");
 	
 	pservice.saveToDB(student1);
 	StudentModel studentobj= pservice.findById("123");
