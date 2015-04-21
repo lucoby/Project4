@@ -1,8 +1,6 @@
 package project4.login.model;
-
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * student model contains all the info inputed by the student and keeps track of
@@ -28,31 +26,31 @@ public class StudentModel {
     }
 
     public String getDesiredCourses() {
-	return desiredCourses;
+ return desiredCourses;
     }
 
     public void setDesiredCourses(String desiredCourses) {
-	this.desiredCourses = desiredCourses;
+ this.desiredCourses = desiredCourses;
     }
 
     public String getId() {
-	return id;
+ return id;
     }
 
     public void setId(String id) {
-	this.id = id;
+ this.id = id;
     }
 
     public List<String> getCourses() {
-	if (courses == null) {
-	    courses = new ArrayList<String>();
-	}
+ if (courses == null) {
+     courses = new ArrayList<String>();
+ }
 
-	return courses;
+ return courses;
     }
 
     public void setCourses(List<String> courses) {
-	this.courses = courses;
+ this.courses = courses;
     }
 
 }
