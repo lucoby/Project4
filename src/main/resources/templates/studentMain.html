@@ -38,5 +38,10 @@
        
         <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
     </form>
+    <table>
+    <tr th:each="Suggestion : ${lpOutput.suggestionS}" th:class="helloWorld">
+    <td th:text="${Suggestion}">Onions</td>
+    </tr>
+    </table>
 </body>
 </html>

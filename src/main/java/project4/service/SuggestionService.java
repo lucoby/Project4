@@ -29,37 +29,44 @@ import project4.login.model.classroom.Student;
 @Service
 public class SuggestionService {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		String studentHistory = "OMS-CS-CourseGrades_Final.csv";
-		LpInput in = constructLpInput(studentHistory);
+//	public void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		String studentHistory = "OMS-CS-CourseGrades_Final.csv";
+//		LpInput in = constructLpInput(studentHistory);
+//
+//		// for (StudentModel s : in.getStudents()) {
+//		// System.out.println(s.getId());
+//		// for (String c : s.getCoursesTaken()) {
+//		// System.out.println(c);
+//		// }
+//		// }
+//
+//		writeLpFile(in, "suggestion.lp", 5);
+//		runGurobi("suggestion.lp","suggestion.sol");
+//		int[][] suggestion = new int[in.getStudents().size()][in.getRequiredCourses().size()];
+//		readSolFile(in,"suggestion.sol", suggestion);
+//		writeOptimizedSchedule("suggested_schedule.txt",suggestion,in);
+//		
+//
+//	}
 
-		// for (StudentModel s : in.getStudents()) {
-		// System.out.println(s.getId());
-		// for (String c : s.getCoursesTaken()) {
-		// System.out.println(c);
-		// }
-		// }
-
-		writeLpFile(in, "suggestion.lp", 5);
-		runGurobi("suggestion.lp","suggestion.sol");
-		int[][] suggestion = new int[in.getStudents().size()][in.getRequiredCourses().size()];
-		readSolFile(in,"suggestion.sol", suggestion);
-		writeOptimizedSchedule("suggested_schedule.txt",suggestion,in);
-		
+	public SuggestionService() {
 
 	}
-
-	public SuggestionService(LpInput in) {
+	
+	public LpOutput calculateSuggestion(LpInput in, String id) {
 		writeLpFile(in, "suggestion.lp", 5);
 		runGurobi("suggestion.lp","suggestion.sol");
 		int[][] suggestion = new int[in.getStudents().size()][in.getRequiredCourses().size()];
-		readSolFile(in,"suggestion.sol", suggestion);
+		String[] suggestionS = new String[2];
+		readSolFile(in,"suggestion.sol", suggestion, suggestionS, id);
 		LpOutput out = new LpOutput();
 		out.setSuggestion(suggestion);
+		studentSuggestion(in,out,id);
+		return out;
 	}
 
-	public static LpInput constructLpInput(String studentInputs) {
+	public LpInput constructLpInput(String studentInputs) {
 		// Because random is cooldom
 		Random rand = new Random();
 
@@ -224,7 +231,7 @@ public class SuggestionService {
 		return ret;
 	}
 
-	private static String getRandomCourse(Random rand,
+	private String getRandomCourse(Random rand,
 			ArrayList<Course> requiredCourses,
 			HashMap<String, Integer> desiredCourse) {
 		String randCourse = requiredCourses.get(
@@ -236,7 +243,7 @@ public class SuggestionService {
 		return randCourse;
 	}
 
-	private static void writeLpFile(LpInput in, String lpFile, int maxPref) {
+	private void writeLpFile(LpInput in, String lpFile, int maxPref) {
 		try {
 			File file = new File(lpFile);
 			if (!file.exists()) {
@@ -372,7 +379,7 @@ public class SuggestionService {
 		}
 	}
 
-	private static void runGurobi(String lpFile, String solFile) {
+	private void runGurobi(String lpFile, String solFile) {
 		try {
 			GRBEnv env = new GRBEnv();
 			env.set(GRB.IntParam.OutputFlag, 0);
@@ -415,7 +422,7 @@ public class SuggestionService {
 		}
 	}
 
-	private static void readSolFile(LpInput in, String solFile, int[][] suggestion) {
+	private void readSolFile(LpInput in, String solFile, int[][] suggestion, String[] suggestionS, String id) {
 		FileReader fr = null;
 		BufferedReader br = null;
 
@@ -471,8 +478,24 @@ public class SuggestionService {
 		}
 	}
 
+	private void studentSuggestion(LpInput in, LpOutput out, String id){
+		String[] SuggestionS = new String[2];
+		int k = 0;
+		for (int i = 0; i < in.getStudents().size(); i++) {
+			if (in.getStudents().get(i).getId().equals(id)) {
+				for (int j = 0; j < in.getRequiredCourses().size(); j++) {
+					if (out.getSuggestion()[i][j]== 1) {
+						SuggestionS[k] = in.getRequiredCourses().get(j).getName();
+						k++;
+					}
+				}
+				
+			}
+		}
+		out.setSuggestionS(SuggestionS);
+	}
 
-	private static void writeOptimizedSchedule(String suggestedSchedule,
+	private void writeOptimizedSchedule(String suggestedSchedule,
 			int[][] suggestion, LpInput in) {
 		try {
 			File file = new File(suggestedSchedule);
