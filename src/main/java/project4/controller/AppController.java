@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -18,7 +20,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import project4.login.model.AdminModel;
 import project4.login.model.LoginModel;
@@ -61,6 +62,23 @@ public class AppController {
 	logger.info("pw is " + login.getPassword());
 	LpInput in = persistenceService.findLpInput("123");
 	LpOutput out = suggestionService.calculateSuggestion(in,login.getId());
+	
+	String[] courses = new String[5];
+	
+	for(Student s:in.getStudents()) {
+		if(s.getId().equals(login.getId())) {
+			for (String c : s.getNextSemester().keySet()) {
+				String p = c + ", " + s.getNextSemester().get(c);
+				logger.info(p);
+				courses[Integer.valueOf(s.getNextSemester().get(c))-1] = p;
+			}
+		}
+	}
+	PriorityComp pcomp = new PriorityComp();
+	Arrays.sort(courses,pcomp);
+	
+	model.addAttribute("courses", courses);
+	
 	model.addAttribute("lpOutput",out);
 	// TODO set login to true
 	return "studentMain";
@@ -86,9 +104,11 @@ public class AppController {
 	for (String s : student.getCourses()) {
 	    logger.info(s);
 	}
-
+	
 	// TODO use service to update params for LP
 	LpInput in = persistenceService.findLpInput("123");
+
+	
 	LpOutput out = suggestionService.calculateSuggestion(in,student.getId());
 	model.addAttribute("lpOutput",out);
 	// TODO return view with graphs and stuff
@@ -363,4 +383,14 @@ public class AppController {
 		}
 		return randCourse;
 	}
+}
+
+class PriorityComp implements Comparator<String> {
+
+	@Override
+	public int compare(String s1, String s2) {
+		// TODO Auto-generated method stub
+		return Integer.valueOf(s1.charAt(s1.length() - 1)) - Integer.valueOf(s2.charAt(s2.length() - 1));
+	}
+	
 }

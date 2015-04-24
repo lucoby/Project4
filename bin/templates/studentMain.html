@@ -38,6 +38,13 @@
        
         <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
     </form>
+    <p>Desired course, priority:</p>
+    <table>
+    <tr th:each="DesiredCourse : ${courses}" th:class="helloWorld">
+    <td th:text="${DesiredCourse}">Onions</td>
+    </tr>
+    </table>
+    <p>Suggested Courses:</p>
     <table>
     <tr th:each="Suggestion : ${lpOutput.suggestionS}" th:class="helloWorld">
     <td th:text="${Suggestion}">Onions</td>

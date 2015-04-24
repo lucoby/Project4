@@ -18,11 +18,10 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
-import project4.login.model.StudentModel;
 import project4.login.model.classroom.Course;
+import project4.login.model.classroom.Student;
 import project4.login.model.lpsolver.LpInput;
 import project4.login.model.lpsolver.LpOutput;
-import project4.login.model.classroom.Student;
 
 
 
