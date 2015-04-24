@@ -152,9 +152,23 @@ public class AppController {
 	    @ModelAttribute("adminModel") AdminModel admin, Model model) {
 
 	// TODO use service to update params for LP
+    	
+    LpInput in = persistenceService.findLpInput("123");
+    int limit = 0;
+    if(!admin.getClassEnrollmentLimit().isEmpty()) {
+    	limit = Integer.valueOf(admin.getClassEnrollmentLimit());
+    } else {
+    	limit = in.getDefaultEnrollmentLimit();
+    }
 	logger.info("courses for next semester");
 	for (String s : admin.getCoursesForSemester()) {
-	    logger.info(s);
+	    logger.info(s + " added with enrollment limit of " + limit);
+	    in.getCoursesCatalog().add(new Course(s));
+	    in.getRequiredCourses().add(new Course(s));
+	    if(limit != in.getDefaultEnrollmentLimit()) {
+	    	in.getEnrollmentLimit().put(s, limit);
+	    }
+	    
 	}
 	logger.info("TA for next semester");
 	for (String s : admin.getTAs()) {
@@ -164,6 +178,10 @@ public class AppController {
 	for (String s : admin.getProfessors()) {
 	    logger.info(s);
 	}
+	
+	
+	
+	persistenceService.saveLpToDB(in);
 	// TODO return view with graphs and stuff
 	return "adminMain";
     }
