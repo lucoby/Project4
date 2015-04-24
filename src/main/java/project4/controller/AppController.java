@@ -178,9 +178,7 @@ public class AppController {
 	for (String s : admin.getProfessors()) {
 	    logger.info(s);
 	}
-	
-	
-	
+		
 	persistenceService.saveLpToDB(in);
 	// TODO return view with graphs and stuff
 	return "adminMain";
