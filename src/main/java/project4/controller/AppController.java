@@ -62,7 +62,7 @@ public class AppController {
 	logger.info("pw is " + login.getPassword());
 	LpInput in = persistenceService.findLpInput("123");
 	LpOutput out = suggestionService.calculateSuggestion(in,login.getId());
-	
+	persistenceService.saveLpOutToDB(out);
 	String[] courses = new String[5];
 	
 	for(Student s:in.getStudents()) {
@@ -107,9 +107,42 @@ public class AppController {
 	
 	// TODO use service to update params for LP
 	LpInput in = persistenceService.findLpInput("123");
+	LpOutput out = persistenceService.findLpOutput(student.getId());
+	
+	
 
 	
-	LpOutput out = suggestionService.calculateSuggestion(in,student.getId());
+	String[] courses = new String[5];
+	
+	for(Student s:in.getStudents()) {
+		if(s.getId().equals(student.getId())) {
+			HashMap<String, Integer> nextSemester = new HashMap<String, Integer>();
+			int i = 0;
+			for (String c : student.getCourses()) {
+				i++;
+				nextSemester.put(c, i);
+			}
+			if(i == Integer.valueOf(student.getDesiredCourses())) {
+				s.setNextSemester(nextSemester);
+				logger.info("number of desired courses match");
+			}
+			
+			logger.info("calculating new schedule based on student input");
+			out = suggestionService.calculateSuggestion(in,student.getId());
+			
+			for (String c : s.getNextSemester().keySet()) {
+				String p = c + ", " + s.getNextSemester().get(c);
+				logger.info(p);
+				courses[Integer.valueOf(s.getNextSemester().get(c))-1] = p;
+			}
+		}
+	}
+	PriorityComp pcomp = new PriorityComp();
+	Arrays.sort(courses,pcomp);
+	
+	persistenceService.saveLpOutToDB(out);
+	
+	model.addAttribute("courses", courses);
 	model.addAttribute("lpOutput",out);
 	// TODO return view with graphs and stuff
 	return "studentMain";
@@ -138,8 +171,30 @@ public class AppController {
 
     @RequestMapping(value = "/studentView", params = { "addRow" })
     public String addRow(final StudentModel student,
-	    final BindingResult bindingResult) {
+	    final BindingResult bindingResult, Model model) {
 	student.getCourses().add(new String());
+	
+	LpInput in = persistenceService.findLpInput("123");
+//	LpOutput out = suggestionService.calculateSuggestion(in,student.getId());
+	LpOutput out = persistenceService.findLpOutput(student.getId());
+	
+	String[] courses = new String[5];
+	
+	for(Student s:in.getStudents()) {
+		if(s.getId().equals(student.getId())) {
+			for (String c : s.getNextSemester().keySet()) {
+				String p = c + ", " + s.getNextSemester().get(c);
+				logger.info(p);
+				courses[Integer.valueOf(s.getNextSemester().get(c))-1] = p;
+			}
+		}
+	}
+	PriorityComp pcomp = new PriorityComp();
+	Arrays.sort(courses,pcomp);
+	
+	model.addAttribute("courses", courses);
+	model.addAttribute("lpOutput",out);
+	
 	return "studentMain";
     }
 

@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import project4.Mongo.Interface.LpInputRepository;
+import project4.Mongo.Interface.LpOutputRepository;
 import project4.Mongo.Interface.StudentRepository;
 import project4.login.model.StudentModel;
 import project4.login.model.lpsolver.LpInput;
+import project4.login.model.lpsolver.LpOutput;
 
 @Service
 public class PersistenceService {
@@ -19,12 +21,18 @@ public class PersistenceService {
     private StudentRepository studentRepository;
     @Autowired
     private LpInputRepository lpInputRepository;
+    @Autowired
+    private LpOutputRepository lpOutputRepository;
     public void saveToDB(StudentModel student){
 	studentRepository.save(student);
     }
     
     public void saveLpToDB(LpInput lpInput){
     	lpInputRepository.save(lpInput);
+    }
+    
+    public void saveLpOutToDB(LpOutput lpOutput){
+    	lpOutputRepository.save(lpOutput);
     }
     
     public List<StudentModel> findAll(){
@@ -40,7 +48,10 @@ public class PersistenceService {
     	logger.info("finding LpInput");
     	return lpInputRepository.findById(id);
     }
-    
+    public LpOutput findLpOutput(String id) {
+    	logger.info("finding LpOutput");
+    	return lpOutputRepository.findById(id);
+    }
     public void removeAll(){
 	studentRepository.deleteAll();
     }

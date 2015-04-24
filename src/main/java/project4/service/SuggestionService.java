@@ -62,6 +62,7 @@ public class SuggestionService {
 		LpOutput out = new LpOutput();
 		out.setSuggestion(suggestion);
 		studentSuggestion(in,out,id);
+		out.setId(id);
 		return out;
 	}
 
