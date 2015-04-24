@@ -109,10 +109,7 @@ public class AppController {
 	LpInput in = persistenceService.findLpInput("123");
 	LpOutput out = persistenceService.findLpOutput(student.getId());
 	
-	
-
-	
-	String[] courses = new String[5];
+	String[] courses = new String[Integer.valueOf(student.getDesiredCourses())];
 	
 	for(Student s:in.getStudents()) {
 		if(s.getId().equals(student.getId())) {
@@ -129,6 +126,8 @@ public class AppController {
 			
 			logger.info("calculating new schedule based on student input");
 			out = suggestionService.calculateSuggestion(in,student.getId());
+			
+			
 			
 			for (String c : s.getNextSemester().keySet()) {
 				String p = c + ", " + s.getNextSemester().get(c);
@@ -200,10 +199,34 @@ public class AppController {
 
     @RequestMapping(value = "/studentView", params = { "removeRow" })
     public String removeRow(final StudentModel student,
-	    final BindingResult bindingResult, final HttpServletRequest req) {
+	    final BindingResult bindingResult, final HttpServletRequest req, Model model) {
 	final int rowId = Integer.valueOf(req.getParameter("removeRow"));
 	logger.info("removing" + rowId);
 	student.getCourses().remove(rowId);
+	
+	
+	LpInput in = persistenceService.findLpInput("123");
+//	LpOutput out = suggestionService.calculateSuggestion(in,student.getId());
+	LpOutput out = persistenceService.findLpOutput(student.getId());
+	
+	String[] courses = new String[5];
+	
+	for(Student s:in.getStudents()) {
+		if(s.getId().equals(student.getId())) {
+			for (String c : s.getNextSemester().keySet()) {
+				String p = c + ", " + s.getNextSemester().get(c);
+				logger.info(p);
+				courses[Integer.valueOf(s.getNextSemester().get(c))-1] = p;
+			}
+		}
+	}
+	PriorityComp pcomp = new PriorityComp();
+	Arrays.sort(courses,pcomp);
+	
+	model.addAttribute("courses", courses);
+	model.addAttribute("lpOutput",out);
+	
+	
 	return "studentMain";
     }
 
